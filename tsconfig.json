@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    /* ----- Các tùy chọn cơ bản ----- */
+    "target": "es6", // Biên dịch về ES6 (JavaScript hiện đại)
+    "module": "es6", // Sử dụng module ES6
+    "strict": true, // Bật tất cả các chế độ kiểm tra kiểu nghiêm ngặt
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    /* ----- Tùy chọn cho Chrome Extension ----- */
+    // "lib": ["es6", "dom"], // Thêm "dom" nếu bạn có content scripts
+    /* ----- Chỉ định thư mục ----- */
+    "rootDir": "./src", // Thư mục chứa mã nguồn .ts
+    "outDir": "./dist" // Thư mục chứa mã .js sau khi biên dịch
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
