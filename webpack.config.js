@@ -1,5 +1,7 @@
-const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const path = require('path');
 const glob = require('glob');
 
 //
@@ -7,62 +9,84 @@ const glob = require('glob');
 //
 function makeEntries(pattern) {
   const entries = {};
-  glob.sync(pattern, { ignore: ['./src/background.ts'] }).forEach((file) => {
+  glob.sync(pattern, { ignore: ['./src/background/**/*'] }).forEach((file) => {
     const relative = path.relative('./src', file);
     const normalized = path.posix.join(...relative.split(path.sep));
-    const name = normalized.replace(/\.ts$/, '');
+    const name = normalized.replace(/\.(t|j)sx?$/, '');
     entries[name] = './src/' + normalized;
   });
   return entries;
 }
 
 //
-// ⚙️ 2. Config riêng cho background (service worker)
+// Config for background (service worker)
 //
 const backgroundConfig = {
   name: 'background',
   mode: 'production',
-  target: 'webworker', // Quan trọng!
-  entry: { background: './src/background.ts' },
+  target: 'webworker',
+  entry: { background: './src/background/background.ts' },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
+    filename: 'background/[name].js',
     clean: true,
-    iife: false, // Quan trọng!
+    iife: false,
   },
   resolve: { extensions: ['.ts', '.js'] },
   module: {
     rules: [{ test: /\.ts$/, use: 'ts-loader', exclude: /node_modules/ }],
   },
+  plugins: [new CleanWebpackPlugin()],
 };
 
 //
-// 💻 3. Config cho content, popup, options, etc
+// Config for content, popup, options, etc
 //
+const uiEntries = makeEntries('./src/**/index.{ts,tsx}');
+
+const htmlPlugins = Object.keys(uiEntries)
+  .filter((name) => name.startsWith('popup') || name.startsWith('options'))
+  .map((name) => {
+    return new HtmlWebpackPlugin({
+      filename: `${name}.html`,
+      template: `src/${name}.html`,
+      chunks: [name],
+    });
+  });
+
 const uiConfig = {
   name: 'ui',
   mode: 'production',
   target: 'web',
-  entry: makeEntries('./src/**/*.ts'),
+  entry: uiEntries,
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
   },
-  resolve: { extensions: ['.ts', '.js'] },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
+  },
   module: {
-    rules: [{ test: /\.ts$/, use: 'ts-loader', exclude: /node_modules/ }],
+    rules: [
+      {
+        test: /\.[tj]sx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
   },
   plugins: [
     new CopyPlugin({
       patterns: [
         { from: 'src/manifest.json', to: '.' },
         {
-          from: '**/*.{html,css}',
+          from: '**/*.{css}',
           context: path.resolve(__dirname, 'src'),
           to: '[path][name][ext]',
         },
       ],
     }),
+    ...htmlPlugins,
   ],
 };
 
