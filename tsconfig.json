@@ -8,11 +8,14 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types"
+    ]
   },
   "include": [
-    "src/**/*",
-    "../popuptest.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules"

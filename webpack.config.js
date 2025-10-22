@@ -4,9 +4,6 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const path = require('path');
 const glob = require('glob');
 
-//
-// 🎯 1. Tạo entry tự động
-//
 function makeEntries(pattern) {
   const entries = {};
   glob.sync(pattern, { ignore: ['./src/background/**/*'] }).forEach((file) => {
@@ -73,6 +70,10 @@ const uiConfig = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
+      },
     ],
   },
   plugins: [
@@ -80,7 +81,7 @@ const uiConfig = {
       patterns: [
         { from: 'src/manifest.json', to: '.' },
         {
-          from: '**/*.{css}',
+          from: '**/*.css',
           context: path.resolve(__dirname, 'src'),
           to: '[path][name][ext]',
         },
